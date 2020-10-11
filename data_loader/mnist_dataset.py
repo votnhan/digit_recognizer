@@ -11,7 +11,9 @@ class MNISTDataset(Dataset):
         self.csv_file = csv_file
         self.inc_label = label
         self.data_path = os.path.join(data_dir, csv_file)
-        self.dataframe = pd.read_csv(self.data_path, index_col='Unnamed: 0')
+        self.dataframe = pd.read_csv(self.data_path)
+        if len(self.dataframe.columns) == 786:
+            self.dataframe.set_index('Unnamed: 0', inplace=True)
         self.len = len(self.dataframe)
         self.image_size = 28
         self.transforms = transforms

@@ -2,7 +2,7 @@ from utils import *
 from logger import setup_logging
 from pathlib import Path
 from datetime import datetime
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ReduceLROnPlateau, MultiStepLR
 from numpy import inf
 import logging
 import torch
@@ -258,6 +258,9 @@ class ClassificationTrainer():
 
             if epoch % self.save_step == 0:
                 self.save_checkpoint(epoch, save_best=best)
+
+            if isinstance(self.lr_scheduler, MultiStepLR):
+                self.lr_scheduler.step()
 
 
     def eval(self, save_result=False):

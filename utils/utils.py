@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 
@@ -47,3 +48,14 @@ def append_log_to_file(file_path, list_items):
         line_items = ','.join(list_items)
         opened_file.write(line_items+'\n')
         opened_file.close()
+
+def plot_train_val_loss(log_file, out_file):
+    df = pd.read_csv(log_file, index_col='Epoch')
+    plt.plot(df['Train_loss'].values, label='Training loss')
+    plt.plot(df['Validation_loss'].values, label='Validation loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper right')
+    plt.savefig(out_file)
+    print('Plot train and val loss to {}'.format(out_file))
+
