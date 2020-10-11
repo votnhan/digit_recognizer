@@ -59,7 +59,7 @@ def main(config):
                                         optimizer, lr_scheduler)
 
     csf_trainer.setup_loader(train_loader, val_loader)
-    csf_trainer.train()
+    csf_trainer.train(config['trainer']['track4plot'])
 
 
 if __name__ == '__main__':

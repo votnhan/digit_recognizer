@@ -1,4 +1,4 @@
-from utils import MetricTracker, save_pandas_df, create_folder
+from utils import *
 from logger import setup_logging
 from pathlib import Path
 from datetime import datetime
@@ -35,11 +35,6 @@ class ClassificationTrainer():
         self.test_loss = MetricTracker(self.config['loss'])
         self.test_metrics = MetricTracker(*self.config['metrics'])
 
-        # resume from checkpoint 
-        cp_path = self.config['trainer']['resume_path']
-        if cp_path != '':
-            self.resume_checkpoint(cp_path)
-
         # create 2 folder for logging and saving checkpoints
         save_dir =  Path(self.config['trainer']['save_dir'])
         run_id = datetime.now().strftime(r'%m%d_%H%M%S')
@@ -69,12 +64,16 @@ class ClassificationTrainer():
         else:
             self.mnt_best = -inf
 
-    
+        # resume from checkpoint 
+        cp_path = self.config['trainer']['resume_path']
+        if cp_path != '':
+            self.resume_checkpoint(cp_path)
+
     def setup_loader(self, train_loader, val_loader):
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-
+    
     def reset_metrics_tracker(self):
         self.train_loss.reset()
         self.train_metrics.reset()
@@ -145,7 +144,7 @@ class ClassificationTrainer():
 
                 if save_result:
                     output_cls = torch.argmax(output, 1)
-                    save_result.append([id_img, target, output_cls])
+                    result.append([id_img, target, output_cls])
 
         log = self.val_loss.result()
         log.update(self.val_metrics.result())
@@ -199,7 +198,7 @@ class ClassificationTrainer():
 
     
     def log_for_step(self, epoch, batch_idx):
-        message_loss = 'Train Epoch: {} [{}]/[{}] Dice Loss: {:.6f}'.\
+        message_loss = 'Train Epoch: {} [{}]/[{}] Categorical CE Loss: {:.6f}'.\
                                 format(epoch, 
                                 batch_idx, len(self.train_loader), 
                                 self.train_loss.avg(self.config['loss']))
@@ -209,12 +208,22 @@ class ClassificationTrainer():
         self.logger.info(message_loss)
         self.logger.info(message_metrics)
 
-    def train(self):
+    def train(self, track4plot=False):
         # Train logic
         not_improve_count = 0
-        
+        self.model.to(self.device)
+        if track4plot:
+            self.track4plot = str(self.log_dir / 'log_loss.txt')
+            headers = ['Epoch', 'Train_loss', 'Validation_loss']
+            append_log_to_file(self.track4plot, headers)
+
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
+            if track4plot:
+                loss_name = self.config['loss']
+                lines = [epoch, result.get(loss_name), result.get('val_'+loss_name)]
+                lines = [str(x) for x in lines]
+                append_log_to_file(self.track4plot, lines)
 
             # save logged information to log dict
             log = {'epoch': epoch}
@@ -226,13 +235,13 @@ class ClassificationTrainer():
 
             # save checkpoint with the best result on configured metric
             best = False
-            tracked_metric = log.get(self.config['trainer']['tracked_metric'])
+            tracked_metric = log.get(self.tracked_metric)
             if tracked_metric:
                 improved = False
-                if self.mnt_best == 'min' and tracked_metric < self.mnt_best:
+                if self.mode_monitor == 'min' and tracked_metric < self.mnt_best:
                     improved = True 
 
-                if self.mnt_best == 'max' and tracked_metric > self.mnt_best:
+                if self.mode_monitor == 'max' and tracked_metric > self.mnt_best:
                     improved = True                 
 
                 if improved:
@@ -252,18 +261,19 @@ class ClassificationTrainer():
 
 
     def eval(self, save_result=False):
-        
+        self.model.to(self.device)
         if save_result:
             log, result = self._validate_epoch(1, save_result)
             # save prediction to csv file
             res_path = str(self.save_dir / 'result.csv')
             ids, targets, predictions = [], [], []
             for batch_pred in result:
-                ids += batch_pred[0]
-                targets += batch_pred[1]
-                predictions += batch_pred[2]
+                ids += list(batch_pred[0].cpu().numpy())
+                targets += list(batch_pred[1].cpu().numpy())
+                predictions += list(batch_pred[2].cpu().numpy())
 
-            save_pandas_df(zip(targets, predictions), res_path, ids)
+            save_pandas_df(zip(targets, predictions), res_path, ids, 
+                            ['Target', 'Prediction'])
             print('Saved prediction to {}.'.format(res_path))
         
         else:

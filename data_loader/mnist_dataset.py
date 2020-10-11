@@ -22,18 +22,22 @@ class MNISTDataset(Dataset):
     def __getitem__(self, index):
         if self.inc_label:
             label = self.dataframe.iloc[index, 0]
-            vector_data = np.asarray(self.dataframe.iloc[index, 1:])
+            vector_data = np.asarray(self.dataframe.iloc[index, 1:], 
+                                            dtype=np.float32)
         else:
-            vector_data = np.asarray(self.dataframe.iloc[index, :])
+            vector_data = np.asarray(self.dataframe.iloc[index, :], 
+                                            dtype=np.float32)
 
         data = vector_data.reshape(self.image_size, self.image_size)
         data = np.expand_dims(data, axis=2)
         
+        data_tensor = data
+
         if self.transforms:
             data_tensor = self.transforms(data_tensor)
 
         if self.inc_label:
-            label_tensor = torch.from_numpy(label)
+            label_tensor = torch.tensor(label)
             return data_tensor, label_tensor, self.dataframe.index[index]
         
         return data_tensor, self.dataframe.index[index]

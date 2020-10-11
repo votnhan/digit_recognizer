@@ -27,14 +27,15 @@
         "resume_path": "",
         "save_dir": "saved",
         "device": "GPU",
-        "log_step": 20,
+        "log_step": 50,
         "do_validation": true,
         "validation_step": 1,
         "epochs": 100,
         "tracked_metric": ["val_neg_log_llhood", "min"],
         "patience": 10,
         "save_period": 1,
-        "save_result": false
+        "save_result": false,
+        "track4plot": true
     },
     "optimizer":{
         "name": "SGD",

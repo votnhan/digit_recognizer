@@ -33,12 +33,17 @@ def read_json(fname):
     
     return data
 
-def save_pandas_df(data, filename, index):
-    df = pd.DataFrame(data=data, index=index)
+def save_pandas_df(data, filename, index, columns):
+    df = pd.DataFrame(data=data, index=index, columns=columns)
     df.to_csv(filename)
 
 def create_folder(path):
     path = str(path)
     if not os.path.exists(path):
         os.makedirs(path)
-    
+
+def append_log_to_file(file_path, list_items):
+    with open(file_path, 'a') as opened_file:
+        line_items = ','.join(list_items)
+        opened_file.write(line_items+'\n')
+        opened_file.close()
