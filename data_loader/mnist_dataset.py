@@ -11,7 +11,7 @@ class MNISTDataset(Dataset):
         self.csv_file = csv_file
         self.inc_label = label
         self.data_path = os.path.join(data_dir, csv_file)
-        self.dataframe = pd.read_csv(self.data_path)
+        self.dataframe = pd.read_csv(self.data_path, index_col='Unnamed: 0')
         self.len = len(self.dataframe)
         self.image_size = 28
         self.transforms = transforms
@@ -28,7 +28,6 @@ class MNISTDataset(Dataset):
 
         data = vector_data.reshape(self.image_size, self.image_size)
         data = np.expand_dims(data, axis=2)
-        data_tensor = tf.ToTensor(data)
         
         if self.transforms:
             data_tensor = self.transforms(data_tensor)

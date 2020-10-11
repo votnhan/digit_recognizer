@@ -1,5 +1,7 @@
 import argparse
 import torch.optim as otpm
+import torch
+import numpy as np
 from torch.utils.data import DataLoader
 from utils import read_json
 from data_loader import MNISTDataset

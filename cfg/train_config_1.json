@@ -22,7 +22,7 @@
         }
     },
     "metrics": ["accuracy"],
-    "loss": ["neg_log_llhood"],
+    "loss": "neg_log_llhood",
     "trainer":{
         "resume_path": "",
         "save_dir": "saved",
@@ -38,7 +38,9 @@
     },
     "optimizer":{
         "name": "SGD",
-        "lr": 0.02
+        "args":{
+            "lr": 0.01
+        }   
     },
     "lr_scheduler":{
         "name": "ReduceLROnPlateau",
