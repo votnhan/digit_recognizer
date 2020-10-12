@@ -34,9 +34,9 @@ def read_json(fname):
     
     return data
 
-def save_pandas_df(data, filename, index, columns):
+def save_pandas_df(data, filename, index, columns, use_index=True):
     df = pd.DataFrame(data=data, index=index, columns=columns)
-    df.to_csv(filename)
+    df.to_csv(filename, index=use_index)
 
 def create_folder(path):
     path = str(path)

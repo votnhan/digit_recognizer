@@ -21,6 +21,16 @@
             "num_workers": 0
         }
     },
+    "test_data_loader":{
+        "name": "MNIST test dataloader",
+        "args": {
+            "root": "data",
+            "csv_file": "test.csv",
+            "batch_size": 64,
+            "shuffle": false,
+            "num_workers": 0
+        }
+    },
     "metrics": ["accuracy"],
     "loss": "neg_log_llhood",
     "trainer":{

@@ -12,7 +12,7 @@ class MNISTDataset(Dataset):
         self.inc_label = label
         self.data_path = os.path.join(data_dir, csv_file)
         self.dataframe = pd.read_csv(self.data_path)
-        if len(self.dataframe.columns) == 786:
+        if 'Unnamed: 0' in self.dataframe.columns:
             self.dataframe.set_index('Unnamed: 0', inplace=True)
         self.len = len(self.dataframe)
         self.image_size = 28

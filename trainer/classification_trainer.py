@@ -285,3 +285,31 @@ class ClassificationTrainer():
         # print logged information to the screen
         for key, value in log.items():
             self.logger.info('    {:15s}: {}'.format(str(key), value))
+
+    def test(self, testloader):
+        self.model.to(self.device)
+        self.model.eval()
+        self.logger.info('Inference: ')
+        result = []
+        with torch.no_grad():
+            for batch_idx, (data, id_img) in enumerate(testloader):
+                data = data.to(self.device)
+                output = self.model(data)
+
+                if batch_idx % self.log_step == 0:
+                    self.logger.debug('{}/{}'.format(batch_idx, 
+                            len(testloader)))
+
+                output_cls = torch.argmax(output, 1)
+                result.append([id_img, output_cls])
+
+        # save prediction to csv file
+        res_path = str(self.save_dir / 'infer_result.csv')
+        ids, predictions = [], []
+        for batch_pred in result:
+            ids += list(batch_pred[0].cpu().numpy() + 1)
+            predictions += list(batch_pred[1].cpu().numpy())
+
+        save_pandas_df(zip(ids, predictions), res_path, None, 
+                            ['ImageId', 'Label'], False)
+        print('Saved inference prediction to {}.'.format(res_path))     
